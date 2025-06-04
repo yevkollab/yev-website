@@ -49,47 +49,39 @@
     <h1>Screen Time</h1>
     <div class="divider"></div>
     <div class="content">
-        <h2>My Screen Time</h2>
-        
-        <div id="screenTimeContainer">
-            <!-- Using CORS Anywhere as a proxy -->
-            <iframe id="screenTimeFrame" 
-                src="https://cors-anywhere.herokuapp.com/https://www.thescreentimenetwork.com/yev" 
-                width="500" height="600" frameborder="0" scrolling="auto"
-                allow="fullscreen" loading="lazy">
-            </iframe>
-        </div>
+        <iframe id="screenTimeFrame" src="https://cors-anywhere.herokuapp.com/https://www.thescreentimenetwork.com/yev" width="500" height="600" frameborder="0" scrolling="auto"></iframe>
         
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const iframe = document.getElementById('screenTimeFrame');
-                const container = document.getElementById('screenTimeContainer');
+                const container = iframe.parentElement;
                 
-                // Show fallback message if iframe fails to load
+                // Handle load errors
                 iframe.onerror = function() {
-                    showFallbackMessage();
+                    showErrorMessage();
                 };
                 
-                // Function to display fallback message
-                function showFallbackMessage() {
+                function showErrorMessage() {
                     container.innerHTML = `
-                        <div style="border:1px solid #ccc; padding:20px; text-align:center;">
-                            <p>Unable to embed screen time data.</p>
-                            <p>Please <a href="https://www.thescreentimenetwork.com/yev" target="_blank">click here</a> to view your screen time data.</p>
-                            <p><small>Note: You may need to visit <a href="https://cors-anywhere.herokuapp.com/corsdemo" target="_blank">https://cors-anywhere.herokuapp.com/corsdemo</a> first and request temporary access to the demo server.</small></p>
-                        </div>
+                        <p>Unable to load Screen Time Network data.</p>
+                        <p>You may need to authorize the CORS proxy first.</p>
+                        <p>
+                            <a href="https://cors-anywhere.herokuapp.com/corsdemo" target="_blank">1. Click here to request demo access</a><br>
+                            <a href="screen.html">2. Then return to this page</a>
+                        </p>
                     `;
                 }
                 
-                // Check if iframe loaded successfully after a timeout
+                // Check after 5 seconds if the iframe loaded correctly
                 setTimeout(function() {
                     try {
-                        // If we can't access the iframe content, show fallback
-                        if (!iframe.contentWindow || !iframe.contentWindow.document) {
-                            showFallbackMessage();
+                        // This will throw an error if iframe is blocked by security policy
+                        if (iframe.contentDocument === null) {
+                            showErrorMessage();
                         }
                     } catch (e) {
-                        showFallbackMessage();
+                        // Security error - likely X-Frame-Options blocking
+                        showErrorMessage();
                     }
                 }, 5000);
             });
