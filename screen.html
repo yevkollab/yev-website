@@ -52,109 +52,46 @@
         <h2>My Screen Time</h2>
         
         <div id="screenTimeContainer">
-            <!-- Try multiple approaches in sequence -->
+            <!-- Using CORS Anywhere as a proxy -->
             <iframe id="screenTimeFrame" 
-                src="https://www.thescreentimenetwork.com/yev" 
+                src="https://cors-anywhere.herokuapp.com/https://www.thescreentimenetwork.com/yev" 
                 width="500" height="600" frameborder="0" scrolling="auto"
                 allow="fullscreen" loading="lazy">
             </iframe>
         </div>
         
-        <!-- Add a script to create a simple proxy.html file that can be used as a bridge -->
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const iframe = document.getElementById('screenTimeFrame');
                 const container = document.getElementById('screenTimeContainer');
-                const targetUrl = 'https://www.thescreentimenetwork.com/yev';
                 
-                // Try different approaches in sequence
-                const approaches = [
-                    // 1. Direct embedding
-                    () => {
-                        iframe.src = targetUrl;
-                    },
-                    // 2. Try without www
-                    () => {
-                        iframe.src = 'https://thescreentimenetwork.com/yev';
-                    },
-                    // 3. Try with http instead of https
-                    () => {
-                        iframe.src = 'http://www.thescreentimenetwork.com/yev';
-                    },
-                    // 4. Try with srcdoc to create a client-side proxy
-                    () => {
-                        iframe.removeAttribute('src');
-                        iframe.srcdoc = `
-                            <html>
-                            <head>
-                                <style>
-                                    body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-                                    iframe { width: 100%; height: 100%; border: 0; }
-                                </style>
-                            </head>
-                            <body>
-                                <iframe src="${targetUrl}" width="100%" height="100%" frameborder="0"></iframe>
-                            </body>
-                            </html>
-                        `;
-                    },
-                    // 5. Final fallback - show a link
-                    () => {
-                        showFallbackMessage();
-                    }
-                ];
+                // Show fallback message if iframe fails to load
+                iframe.onerror = function() {
+                    showFallbackMessage();
+                };
                 
-                let currentApproach = 0;
-                
-                function tryNextApproach() {
-                    if (currentApproach < approaches.length) {
-                        console.log(`Trying approach ${currentApproach + 1}`);
-                        approaches[currentApproach]();
-                        currentApproach++;
-                        
-                        // Wait and check if this approach worked
-                        setTimeout(checkIfWorking, 2000);
-                    }
-                }
-                
-                function checkIfWorking() {
-                    try {
-                        // Try to access iframe content - if it fails, try next approach
-                        if (iframe.contentWindow && iframe.contentWindow.document) {
-                            console.log('Approach succeeded!');
-                        } else {
-                            tryNextApproach();
-                        }
-                    } catch (e) {
-                        console.log('Access denied, trying next approach');
-                        tryNextApproach();
-                    }
-                }
-                
+                // Function to display fallback message
                 function showFallbackMessage() {
                     container.innerHTML = `
                         <div style="border:1px solid #ccc; padding:20px; text-align:center;">
-                            <p>Unable to embed screen time data due to website restrictions.</p>
-                            <p>Please <a href="${targetUrl}" target="_blank">click here</a> to view your screen time data.</p>
-                            <p><small>Note: Most websites prevent embedding in iframes for security reasons.</small></p>
+                            <p>Unable to embed screen time data.</p>
+                            <p>Please <a href="https://www.thescreentimenetwork.com/yev" target="_blank">click here</a> to view your screen time data.</p>
+                            <p><small>Note: You may need to visit <a href="https://cors-anywhere.herokuapp.com/corsdemo" target="_blank">https://cors-anywhere.herokuapp.com/corsdemo</a> first and request temporary access to the demo server.</small></p>
                         </div>
                     `;
                 }
                 
-                // Start the process
-                tryNextApproach();
-                
-                // Final fallback after waiting
+                // Check if iframe loaded successfully after a timeout
                 setTimeout(function() {
                     try {
-                        // If we still can't access the content after all approaches
+                        // If we can't access the iframe content, show fallback
                         if (!iframe.contentWindow || !iframe.contentWindow.document) {
                             showFallbackMessage();
                         }
                     } catch (e) {
                         showFallbackMessage();
                     }
-                }, 10000);
+                }, 5000);
             });
         </script>
     </div>
