@@ -49,65 +49,8 @@
     <h1>Screen Time</h1>
     <div class="divider"></div>
     <div class="content" id="screenContent">
-        <p>Loading screen time data...</p>
-    
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const contentDiv = document.getElementById('screenContent');
-                const targetUrl = 'https://www.thescreentimenetwork.com/yev';
-                const corsProxy = 'https://cors-anywhere.herokuapp.com/';
-                
-                // We need to use fetch with proper headers instead of direct iframe
-                // since cors-anywhere requires 'origin' or 'x-requested-with' headers
-                fetch(corsProxy + targetUrl, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest' // Required header for cors-anywhere
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.text();
-                })
-                .then(html => {
-                    // Create iframe with the content
-                    const iframe = document.createElement('iframe');
-                    iframe.width = '500';
-                    iframe.height = '600';
-                    iframe.frameBorder = '0';
-                    iframe.scrolling = 'auto';
-                    iframe.style.border = 'none';
-                    
-                    // Add the iframe to the page first
-                    contentDiv.innerHTML = '';
-                    contentDiv.appendChild(iframe);
-                    
-                    // Then set its content (this approach may still be blocked by browser security)
-                    const iframeDoc = iframe.contentWindow.document;
-                    iframeDoc.open();
-                    iframeDoc.write(html);
-                    iframeDoc.close();
-                })
-                .catch(error => {
-                    showErrorMessage();
-                    console.error('Error fetching screen time data:', error);
-                });
-                
-                function showErrorMessage() {
-                    contentDiv.innerHTML = `
-                        <div style="padding: 20px; border: 1px solid #eee; max-width: 500px;">
-                            <p>Unable to load Screen Time Network data.</p>
-                            <p>You need to authorize the CORS proxy first:</p>
-                            <p>
-                                <a href="https://cors-anywhere.herokuapp.com/corsdemo" target="_blank">1. Click here to request demo access</a><br>
-                                <a href="screen.html">2. Then return to this page</a>
-                            </p>
-                        </div>
-                    `;
-                }
-            });
-        </script>
+        <!-- Using corsproxy.io to embed the iframe -->
+        <iframe src="https://corsproxy.io/?url=https://www.thescreentimenetwork.com/yev" width="500" height="600" frameborder="0" scrolling="auto" style="border: none;"></iframe>
     </div>
 </body>
 </html>
