@@ -49,15 +49,110 @@
     <h1>Screen Time</h1>
     <div class="divider"></div>
     <div class="content" id="screenContent">
-        <div style="border: 1px solid #eee; padding: 20px; border-radius: 5px; max-width: 500px;">
-            <h2 style="margin-top: 0;">Screen Time Data</h2>
-            <p>The Screen Time Network data cannot be embedded due to Content Security Policy restrictions set by the website owner.</p>
-            <p>View your screen time data directly at:</p>
-            <p><a href="https://www.thescreentimenetwork.com/yev" target="_blank" style="display: inline-block; padding: 10px 15px; background-color: #000; color: white; text-decoration: none; border-radius: 3px;">Open Screen Time Data</a></p>
-            <div style="margin-top: 20px; color: #666; font-size: 13px;">
-                <p><strong>What happened?</strong> The Screen Time Network website has security policies that prevent it from being displayed within frames on other websites. This is a common security practice to protect user data.</p>
+        <div style="max-width: 500px;">
+            <!-- <h2 style="margin-top: 0;">Screen Time Data</h2> -->
+            
+            <div id="loading" style="margin: 20px 0;">Loading screen time data...</div>
+            
+            <div id="screenTimeData" style="display: none;">
+                <div class="stat-container">
+                    <div class="stat-label">Screen Time Today:</div>
+                    <div class="stat-value" id="todayTime">-</div>
+                </div>
+                
+                <div class="stat-container">
+                    <div class="stat-label">Seven days average:</div>
+                    <div class="stat-value" id="sevenDayAvg">-</div>
+                </div>
+                
+                <div class="stat-container">
+                    <div class="stat-label">Past year average:</div>
+                    <div class="stat-value" id="yearAvg">-</div>
+                </div>
+                
+                <div class="stat-container">
+                    <div class="stat-label">Most used time:</div>
+                    <div class="stat-value" id="mostUsedTime">-</div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <a href="https://www.thescreentimenetwork.com/yev" target="_blank" style="display: inline-block; padding: 6px 12px; background-color: black; color: white; text-decoration: none; font-size: 13px;">View full details</a>
+                </div>
             </div>
+            
+            <div id="error" style="display: none; color: #d00; margin: 20px 0;"></div>
         </div>
     </div>
+    
+    <style>
+        .stat-container {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #333;
+        }
+        .stat-value {
+            font-size: 14px;
+            font-weight: bold;
+        }
+    </style>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingElement = document.getElementById('loading');
+            const dataElement = document.getElementById('screenTimeData');
+            const errorElement = document.getElementById('error');
+            
+            fetch('https://clearspace-server.onrender.com/getPublicScreenTimeNetworkUser?handle=yev')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(response => {
+                    // Hide loading, show data
+                    loadingElement.style.display = 'none';
+                    dataElement.style.display = 'block';
+                    
+                    // The API response has data under a data property
+                    const data = response.data;
+                    console.log('API data:', data); // For debugging
+                    
+                    // Format time function (converts minutes to hours and minutes)
+                    function formatTime(minutes) {
+                        if (minutes === undefined || minutes === null) return 'N/A';
+                        const hours = Math.floor(minutes / 60);
+                        const mins = minutes % 60;
+                        return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+                    }
+                    
+                    // Format and display data using the correct API field names
+                    document.getElementById('todayTime').textContent = formatTime(data.screenTimeToday);
+                    document.getElementById('sevenDayAvg').textContent = formatTime(data.sevenDayAverage);
+                    document.getElementById('yearAvg').textContent = formatTime(data.pastYearAverage);
+                    
+                    // Most used time is already provided as a string
+                    document.getElementById('mostUsedTime').textContent = data.mostUsedTime || 'N/A';
+                    
+                    // Add debug information if data isn't showing properly
+                    if (!data || (!data.screenTimeToday && !data.sevenDayAverage && !data.pastYearAverage)) {
+                        console.warn('Screen time data appears to be missing from the API response', response);
+                    }
+                })
+                .catch(error => {
+                    loadingElement.style.display = 'none';
+                    errorElement.style.display = 'block';
+                    errorElement.textContent = 'Could not load screen time data. Please try again later.';
+                    console.error('Error fetching data:', error);
+                });
+        });
+    </script>
 </body>
 </html>
