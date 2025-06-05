@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Screen Time - yevtherock</title>
+    <title>Stats - yev</title>
     <link rel="icon" type="image/x-icon" href="icon.ico">
     <style>
         body {
@@ -44,9 +44,11 @@
     <header>
         <a href="index.html">home</a>
         <a href="blog.html">blog</a>
-        <a href="screen.html">screen time</a>
+        <a href="stats.html">stats</a>
     </header>
-    <h1>Screen Time</h1>
+    <h1>Stats</h1>
+    <p> some stats from my daily life</p>
+
     <div class="divider"></div>
     <div class="content" id="screenContent">
         <div style="max-width: 500px;">
@@ -56,7 +58,7 @@
             
             <div id="screenTimeData" style="display: none;">
                 <div class="stat-container">
-                    <div class="stat-label">Screen Time Today:</div>
+                    <div class="stat-label"><b>Screen Time Today:</b></div>
                     <div class="stat-value" id="todayTime">-</div>
                 </div>
                 
@@ -75,9 +77,12 @@
                     <div class="stat-value" id="mostUsedTime">-</div>
                 </div>
                 
-                <div style="margin-top: 20px;">
-                    <a href="https://www.thescreentimenetwork.com/yev" target="_blank" style="display: inline-block; padding: 6px 12px; background-color: black; color: white; text-decoration: none; font-size: 13px;">View full details</a>
+                <div class="stat-container">
+                    <div class="stat-label"><b>My twitter follower count:</b></div>
+                    <div class="stat-value" id="twitterFollowers">-</div>
                 </div>
+                
+                <!-- "View full details" button removed as requested -->
             </div>
             
             <div id="error" style="display: none; color: #d00; margin: 20px 0;"></div>
@@ -145,6 +150,24 @@
                     if (!data || (!data.screenTimeToday && !data.sevenDayAverage && !data.pastYearAverage)) {
                         console.warn('Screen time data appears to be missing from the API response', response);
                     }
+                    
+                    // Fetch Twitter follower count
+                    fetch('https://yevwebsite-back-production.up.railway.app/api/twitter/followers')
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Twitter API response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(twitterData => {
+                            console.log('Twitter API data:', twitterData); // For debugging
+                            document.getElementById('twitterFollowers').textContent = 
+                                twitterData.followers !== undefined ? twitterData.followers.toLocaleString() : 'N/A';
+                        })
+                        .catch(error => {
+                            console.error('Error fetching Twitter data:', error);
+                            document.getElementById('twitterFollowers').textContent = 'N/A';
+                        });
                 })
                 .catch(error => {
                     loadingElement.style.display = 'none';
