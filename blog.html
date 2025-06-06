@@ -76,16 +76,16 @@
         <table class="blog-table">
             <thead>
                 <tr>
-                    <th>Article Title</th>
                     <th>Date</th>
-                    <th>Clicks</th>
+                    <th>Title</th>
+                    <th>Views</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td><a href="articles/startups.html">Startups once again</a></td>
                     <td>June 6, 2025</td>
-                    <td class="article-clicks" data-article="startups">-</td>
+                    <td class="article-views" data-article="startups">-</td>
                 </tr>
                 <!-- Add more articles here as they are created -->
             </tbody>
@@ -102,23 +102,39 @@
             // You'll need to implement a backend endpoint that connects to the Google Analytics API
             // and retrieves the event data for article clicks
             
-            // Simulated data for demonstration
-            setTimeout(function() {
-                // In production, replace this with actual API call
-                const articleClicks = {
-                    'startups': Math.floor(Math.random() * 50) + 10 // Random number for demo
-                };
-                
-                // Update the article click counts in the table
-                document.querySelectorAll('.article-clicks').forEach(element => {
-                    const article = element.getAttribute('data-article');
-                    if (articleClicks[article]) {
-                        element.textContent = articleClicks[article];
-                    } else {
-                        element.textContent = '0';
+            // Fetch real article click data from our backend API
+            fetch('https://yevwebsite-back-production.up.railway.app/api/analytics/articleclicks')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Analytics API response was not ok');
                     }
+                    return response.json();
+                })
+                .then(articleClicksData => {
+                    console.log('Article click data:', articleClicksData);
+                    
+                    // Convert array to object for easier lookup
+                    const articleViews = {};
+                    articleClicksData.forEach(item => {
+                        articleViews[item.article] = item.clicks;
+                    });
+                    
+                    // Update the article view counts in the table
+                    document.querySelectorAll('.article-views').forEach(element => {
+                        const article = element.getAttribute('data-article');
+                        if (articleViews[article]) {
+                            element.textContent = articleViews[article];
+                        } else {
+                            element.textContent = '-';
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching article view data:', error);
+                    document.querySelectorAll('.article-views').forEach(element => {
+                        element.textContent = '-';
+                    });
                 });
-            }, 1000); // Simulate network delay
         });
     </script>
 </body>

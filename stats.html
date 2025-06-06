@@ -140,7 +140,7 @@
                     
                     // Format time function (converts minutes to hours and minutes)
                     function formatTime(minutes) {
-                        if (minutes === undefined || minutes === null) return 'N/A';
+                        if (minutes === undefined || minutes === null) return '-';
                         const hours = Math.floor(minutes / 60);
                         const mins = minutes % 60;
                         return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
@@ -152,7 +152,7 @@
                     document.getElementById('yearAvg').textContent = formatTime(data.pastYearAverage);
                     
                     // Most used time is already provided as a string
-                    document.getElementById('mostUsedTime').textContent = data.mostUsedTime || 'N/A';
+                    document.getElementById('mostUsedTime').textContent = data.mostUsedTime || '-';
                     
                     // Add debug information if data isn't showing properly
                     if (!data || (!data.screenTimeToday && !data.sevenDayAverage && !data.pastYearAverage)) {
@@ -170,20 +170,30 @@
                         .then(twitterData => {
                             console.log('Twitter API data:', twitterData); // For debugging
                             document.getElementById('twitterFollowers').textContent = 
-                                twitterData.followers !== undefined ? twitterData.followers.toLocaleString() : 'N/A';
+                                twitterData.followers !== undefined ? twitterData.followers.toLocaleString() : '-';
                         })
                         .catch(error => {
                             console.error('Error fetching Twitter data:', error);
-                            document.getElementById('twitterFollowers').textContent = 'N/A';
+                            document.getElementById('twitterFollowers').textContent = '-';
                         });
                         
-                    // Simulate fetching visitor count from Google Analytics
-                    // In production, this would be replaced with an actual backend API call
-                    // that connects to Google Analytics Data API
-                    setTimeout(function() {
-                        const visitorCount = Math.floor(Math.random() * 300) + 100; // Simulate between 100-400 visitors
-                        document.getElementById('visitorCount').textContent = visitorCount.toLocaleString();
-                    }, 1500); // Simulate network delay
+                    // Fetch real visitor count from our backend API
+                    fetch('https://yevwebsite-back-production.up.railway.app/api/analytics/visitors')
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Analytics API response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(analyticsData => {
+                            console.log('Visitor data:', analyticsData);
+                            document.getElementById('visitorCount').textContent = 
+                                analyticsData.count !== undefined && analyticsData.count !== '-' ? analyticsData.count.toLocaleString() : '-';
+                        })
+                        .catch(error => {
+                            console.error('Error fetching visitor data:', error);
+                            document.getElementById('visitorCount').textContent = '-';
+                        });
                 })
                 .catch(error => {
                     loadingElement.style.display = 'none';
