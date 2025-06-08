@@ -19,8 +19,9 @@
           const articlePath = this.getAttribute('href');
           
           // Send article click event to Google Analytics
+          console.log('Sending GA4 event:', articleName, articlePath);
           gtag('event', 'article_click', {
-            'article_name': articleName,
+            'article_name': articleName.toLowerCase().replace(/\s+/g, '_'), // Normalize article name
             'article_path': articlePath
           });
           

@@ -188,7 +188,7 @@
                         .then(analyticsData => {
                             console.log('Visitor data:', analyticsData);
                             document.getElementById('visitorCount').textContent = 
-                                analyticsData.count !== undefined && analyticsData.count !== '-' ? analyticsData.count.toLocaleString() : '-';
+                                analyticsData.visitors !== undefined && analyticsData.visitors !== '-' ? analyticsData.visitors.toLocaleString() : '-';
                         })
                         .catch(error => {
                             console.error('Error fetching visitor data:', error);
