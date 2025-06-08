@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify - yev</title>
+    <link rel="icon" type="image/x-icon" href="icon.ico">
+    <style>
+        body {
+            background-color: white;
+            font-family: Arial, sans-serif;
+        }
+        header {
+            font-size: 13px;
+            border-bottom: 1px solid black;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            max-width: 500px;
+        }
+        header a {
+            color: black;
+            text-decoration: none;
+            margin-right: 20px;
+        }
+        header a:hover {
+            text-decoration: underline;
+        }
+        h1 {
+            text-align: left;
+        }
+        .divider {
+            border-top: 1px solid #ccc;
+            margin: 20px 0;
+            max-width: 500px;
+        }
+        .content {
+            text-align: left;
+            margin: 0; /* Remove any default margin */
+            max-width: 500px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #1DB954; /* Spotify green */
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .btn:hover {
+            background-color: #1ed760; /* Lighter Spotify green */
+        }
+        .loading {
+            margin: 20px 0;
+            font-style: italic;
+            color: #666;
+        }
+        .error {
+            color: #d00;
+            margin: 20px 0;
+        }
+        .hidden {
+            display: none;
+        }
+        .analysis-card {
+            border: 1px solid #eee;
+            padding: 15px;
+            margin: 15px 0;
+            background-color: #f9f9f9;
+        }
+        .stat-container {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #333;
+        }
+        .stat-value {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .artist-item {
+            margin-bottom: 5px;
+        }
+        .timestamp {
+            font-size: 12px;
+            color: #999;
+            margin-top: 15px;
+            font-style: italic;
+        }
+    </style>
+    <!-- Google Analytics tag (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7KRB3T9944"></script>
+    <script src="js/analytics.js"></script>
+</head>
+<body>
+    <header>
+        <a href="index.html">home</a>
+        <a href="blog.html">blog</a>
+        <a href="stats.html">stats</a>
+        <a href="spotify.html">spotify</a>
+    </header>
+    <h1>Spotify Analysis</h1>
+    <p>Connect your Spotify account to see what your liked songs say about you</p>
+
+    <div class="divider"></div>
+    
+    <div class="content" id="spotifyContent">
+        <!-- Auth section (shown before connecting) -->
+        <div id="authSection">
+            <p>
+                This tool analyzes your Spotify liked songs and uses AI to generate insights about 
+                your music preferences and personality traits.
+            </p>
+            <p>
+                <!-- <b>Your data is private and not stored permanently.</b> Analysis results are cached for 24 hours. -->
+            </p>
+            <button id="connectBtn" class="btn">Connect Spotify</button>
+            <div id="authLoading" class="loading hidden">Connecting to Spotify...</div>
+            <div id="authError" class="error hidden"></div>
+        </div>
+
+        <!-- Analysis section (shown after connecting) -->
+        <div id="analysisSection" class="hidden">
+            <div id="analysisLoading" class="loading">Analyzing your music taste...</div>
+            <div id="analysisError" class="error hidden"></div>
+
+            <div id="analysisResults" class="hidden">
+                <div class="analysis-card">
+                    <h3>Your Music Personality</h3>
+                    <p id="analysisText"></p>
+                </div>
+
+                <h3>Top Artists</h3>
+                <div id="topArtists"></div>
+
+                <div class="stat-container">
+                    <div class="stat-label">Total Songs Analyzed:</div>
+                    <div class="stat-value" id="totalSongs">-</div>
+                </div>
+
+                <div class="timestamp" id="analysisTimestamp"></div>
+                
+                <button id="refreshBtn" class="btn">Refresh Analysis</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const authSection = document.getElementById('authSection');
+            const connectBtn = document.getElementById('connectBtn');
+            const authLoading = document.getElementById('authLoading');
+            const authError = document.getElementById('authError');
+            
+            const analysisSection = document.getElementById('analysisSection');
+            const analysisLoading = document.getElementById('analysisLoading');
+            const analysisError = document.getElementById('analysisError');
+            const analysisResults = document.getElementById('analysisResults');
+            const analysisText = document.getElementById('analysisText');
+            const topArtists = document.getElementById('topArtists');
+            const totalSongs = document.getElementById('totalSongs');
+            const analysisTimestamp = document.getElementById('analysisTimestamp');
+            const refreshBtn = document.getElementById('refreshBtn');
+
+            // Check for auth parameters in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const authStatus = urlParams.get('auth');
+            const userId = urlParams.get('userId');
+            const errorMsg = urlParams.get('message');
+
+            // Backend API base URL
+            const apiBaseUrl = 'https://yevwebsite-back-production.up.railway.app/api';
+            
+            // Check if user is authenticated via local storage
+            const spotifyAuth = getSpotifyAuth();
+
+            // Initialize page based on authentication status
+            if (spotifyAuth && spotifyAuth.userId) {
+                showAnalysisSection(spotifyAuth.userId);
+            } else if (authStatus === 'success' && userId) {
+                // Store auth in local storage
+                setSpotifyAuth({ userId: userId, timestamp: Date.now() });
+                
+                // Clean up URL parameters
+                window.history.replaceState({}, document.title, '/spotify.html');
+                
+                // Show analysis section
+                showAnalysisSection(userId);
+            } else if (authStatus === 'error') {
+                showAuthError(decodeURIComponent(errorMsg || 'Authentication failed'));
+            }
+
+            // Connect button click handler
+            connectBtn.addEventListener('click', function() {
+                connectToSpotify();
+            });
+
+            // Refresh button click handler
+            refreshBtn.addEventListener('click', function() {
+                const auth = getSpotifyAuth();
+                if (auth && auth.userId) {
+                    showAnalysisSection(auth.userId, true);
+                } else {
+                    showAuthError('No authenticated user found. Please reconnect to Spotify.');
+                    showAuthSection();
+                }
+            });
+
+            // Function to initiate Spotify auth flow
+            function connectToSpotify() {
+                authLoading.classList.remove('hidden');
+                authError.classList.add('hidden');
+                connectBtn.disabled = true;
+
+                fetch(`${apiBaseUrl}/spotify/auth`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to initiate Spotify authorization');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data && data.url) {
+                            // Redirect to Spotify auth page
+                            window.location.href = data.url;
+                        } else {
+                            throw new Error('Invalid authorization URL received');
+                        }
+                    })
+                    .catch(error => {
+                        showAuthError(`Error: ${error.message}`);
+                        connectBtn.disabled = false;
+                        authLoading.classList.add('hidden');
+                    });
+            }
+
+            // Function to show analysis section and load data
+            function showAnalysisSection(userId, forceRefresh = false) {
+                authSection.classList.add('hidden');
+                analysisSection.classList.remove('hidden');
+                
+                analysisLoading.classList.remove('hidden');
+                analysisResults.classList.add('hidden');
+                analysisError.classList.add('hidden');
+
+                // Add cache-busting parameter if forcing refresh
+                const cacheBuster = forceRefresh ? `&_cb=${Date.now()}` : '';
+                
+                // Fetch analysis from API
+                fetch(`${apiBaseUrl}/spotify/analyze?userId=${encodeURIComponent(userId)}${cacheBuster}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Server responded with status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        displayAnalysisResults(data);
+                    })
+                    .catch(error => {
+                        analysisLoading.classList.add('hidden');
+                        analysisError.classList.remove('hidden');
+                        analysisError.textContent = `Failed to load analysis: ${error.message}`;
+                    });
+            }
+
+            // Function to display analysis results
+            function displayAnalysisResults(data) {
+                analysisLoading.classList.add('hidden');
+                
+                if (data.error) {
+                    analysisError.classList.remove('hidden');
+                    analysisError.textContent = data.message || 'An error occurred during analysis';
+                    return;
+                }
+
+                // Show results section
+                analysisResults.classList.remove('hidden');
+                
+                // Display analysis text
+                analysisText.textContent = data.analysis || 'No analysis available';
+                
+                // Display total songs
+                totalSongs.textContent = data.totalSongs || 0;
+                
+                // Display top artists
+                if (data.topArtists && data.topArtists.length > 0) {
+                    topArtists.innerHTML = '';
+                    data.topArtists.forEach((artist, index) => {
+                        const artistEl = document.createElement('div');
+                        artistEl.className = 'artist-item';
+                        artistEl.textContent = `${index + 1}. ${artist.name} (${artist.count} songs)`;
+                        topArtists.appendChild(artistEl);
+                    });
+                } else {
+                    topArtists.innerHTML = '<p>No artist data available</p>';
+                }
+                
+                // Set timestamp
+                const now = new Date();
+                analysisTimestamp.textContent = `Analysis last updated: ${now.toLocaleString()}`;
+            }
+
+            // Function to show authentication error
+            function showAuthError(message) {
+                authError.textContent = message;
+                authError.classList.remove('hidden');
+            }
+
+            // Function to show auth section
+            function showAuthSection() {
+                authSection.classList.remove('hidden');
+                analysisSection.classList.add('hidden');
+                connectBtn.disabled = false;
+                authLoading.classList.add('hidden');
+            }
+
+            // Helper functions for auth storage
+            function setSpotifyAuth(data) {
+                localStorage.setItem('spotifyAuth', JSON.stringify(data));
+            }
+
+            function getSpotifyAuth() {
+                try {
+                    const data = localStorage.getItem('spotifyAuth');
+                    return data ? JSON.parse(data) : null;
+                } catch (e) {
+                    console.error('Error parsing Spotify auth data:', e);
+                    return null;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
