@@ -223,7 +223,27 @@
             refreshBtn.addEventListener('click', function() {
                 const auth = getSpotifyAuth();
                 if (auth && auth.userId) {
-                    showAnalysisSection(auth.userId, true);
+                    // Show loading state
+                    analysisLoading.classList.remove('hidden');
+                    analysisResults.classList.add('hidden');
+                    analysisError.classList.add('hidden');
+                    
+                    // Call the new refresh-analysis endpoint instead of the regular analyze endpoint
+                    fetch(`${apiBaseUrl}/spotify/refresh-analysis?userId=${auth.userId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Failed to refresh analysis');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            displayAnalysisResults(data);
+                        })
+                        .catch(error => {
+                            analysisLoading.classList.add('hidden');
+                            analysisError.classList.remove('hidden');
+                            analysisError.textContent = `Failed to refresh analysis: ${error.message}`;
+                        });
                 } else {
                     showAuthError('No authenticated user found. Please reconnect to Spotify.');
                     showAuthSection();
