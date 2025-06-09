@@ -89,10 +89,26 @@
             margin-bottom: 5px;
         }
         .timestamp {
-            font-size: 12px;
+            font-size: 0.8rem;
             color: #999;
-            margin-top: 15px;
-            font-style: italic;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .music-score-header {
+            margin: 1rem 0 2rem;
+            text-align: center;
+        }
+        
+        .music-score-header h2 {
+            font-size: 1.8rem;
+            font-weight: 500;
+        }
+        
+        .music-score-header span {
+            font-weight: bold;
+            color: #1DB954;
+            font-size: 2rem;
         }
     </style>
     <!-- Google Analytics tag (GA4) -->
@@ -132,6 +148,7 @@
             <div id="analysisError" class="error hidden"></div>
 
             <div id="analysisResults" class="hidden">
+                <div id="musicScoreHeader" class="music-score-header hidden"></div>
                 <div class="analysis-card">
                     <h3>Your Music Personality</h3>
                     <p id="analysisText"></p>
@@ -284,10 +301,21 @@
                 // Show results section
                 analysisResults.classList.remove('hidden');
                 
-                // Display analysis text with score in bold
+                // Extract score and display it separately
                 let analysisContent = data.analysis || 'No analysis available';
-                // Replace "Music Taste Score: [X]/100" with "Music Taste Score: <b>[X]/100</b>"
-                analysisContent = analysisContent.replace(/(Music Taste Score: )([0-9]+\/100)/, '$1<b>$2</b>');
+                const scoreMatch = analysisContent.match(/(Music Taste Score: )([0-9]+\/100)/);
+                
+                if (scoreMatch) {
+                    // Extract the score to display in header
+                    const musicScoreHeader = document.getElementById('musicScoreHeader');
+                    musicScoreHeader.innerHTML = `<h2>Music Taste Score: <span>${scoreMatch[2]}</span></h2>`;
+                    musicScoreHeader.classList.remove('hidden');
+                    
+                    // Remove the score from the analysis text
+                    analysisContent = analysisContent.replace(/(Music Taste Score: )([0-9]+\/100)/, '');
+                }
+                
+                // Display the analysis text (now without the score if it was extracted)
                 analysisText.innerHTML = analysisContent;
                 
                 // Display total songs
