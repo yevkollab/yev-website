@@ -284,8 +284,11 @@
                 // Show results section
                 analysisResults.classList.remove('hidden');
                 
-                // Display analysis text
-                analysisText.textContent = data.analysis || 'No analysis available';
+                // Display analysis text with score in bold
+                let analysisContent = data.analysis || 'No analysis available';
+                // Replace "Music Taste Score: [X]/100" with "Music Taste Score: <b>[X]/100</b>"
+                analysisContent = analysisContent.replace(/(Music Taste Score: )([0-9]+\/100)/, '$1<b>$2</b>');
+                analysisText.innerHTML = analysisContent;
                 
                 // Display total songs
                 totalSongs.textContent = data.totalSongs || 0;
