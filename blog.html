@@ -6,42 +6,74 @@
     <title>blog - yev</title>
     <link rel="icon" type="image/x-icon" href="icon.ico">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Serif+Pro:wght@400;600&display=swap');
+        
         body {
-            background-color: white;
-            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            font-family: 'Source Serif Pro', Georgia, serif;
+            color: #333;
+            margin-left: 10px;
+            line-height: 1.6;
         }
         header {
             font-size: 13px;
-            border-bottom: 1px solid black;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            max-width: 500px;
+            border: 1px solid black;
+            padding: 20px;
+            margin: 20px 0;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: left;
         }
         header a {
-            color: black;
+            color: #111;
             text-decoration: none;
             margin-right: 20px;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            letter-spacing: 0.5px;
         }
         header a:hover {
             text-decoration: underline;
         }
         h1 {
+            margin-top: 60px;
             text-align: left;
+            font-size: 45px;
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #111;
         }
         .divider {
-            border-top: 1px solid #ccc;
+            border-top: 1px solid #d6d6d6;
             margin: 20px 0;
             max-width: 500px;
         }
         .content {
             text-align: left;
-            margin: 0; /* Remove any default margin */
+            margin: 0;
             max-width: 500px;
+            font-size: 18px;
         }
+        .content p {
+            margin-bottom: 1.5em;
+            text-indent: 1em;
+            line-height: 1.8;
+        }
+        .content a {
+            color: #111;
+            text-decoration: none;
+            border-bottom: none;
+        }
+        .content a:hover {
+            text-decoration: underline;
+            border-bottom: none;
+        }
+
         .blog-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 60px;
+            margin-top: 20px;
         }
         .blog-table th, .blog-table td {
             padding: 8px 12px;
