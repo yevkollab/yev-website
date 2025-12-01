@@ -164,6 +164,10 @@
                     img.onload = () => {
                         const item = document.createElement('div');
                         item.className = 'gallery-item';
+                        
+                        // Enable lazy loading for performance
+                        img.loading = 'lazy';
+                        
                         // Add animation delay for staggered effect
                         item.style.animationDelay = `${(index % 10) * 0.1}s`;
                         item.appendChild(img);
