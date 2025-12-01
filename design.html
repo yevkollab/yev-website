@@ -9,35 +9,108 @@
         body {
             background-color: white;
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-y: scroll; /* Always show scrollbar to prevent shift */
         }
+        
         header {
             font-size: 13px;
             border: 1px solid black;
             padding: 20px;
-            margin: 20px 0;
+            margin: 20px;
             max-width: 500px;
             text-align: left;
+            box-sizing: border-box;
         }
+        
+        /* Mobile adjustments for header */
+        @media (max-width: 600px) {
+            header, .intro-text {
+                margin: 10px;
+                width: calc(100% - 20px);
+                max-width: none;
+            }
+        }
+
         header a {
             color: black;
             text-decoration: none;
             margin-right: 20px;
         }
+        
         header a:hover {
             text-decoration: underline;
         }
-        h1 {
-            text-align: center;
+
+        .intro-text {
+            max-width: 450px;
+            margin-top: 40px;
+            margin-left: 1px;
+            margin-bottom: 60px;
+            padding: 0 20px;
+            box-sizing: border-box;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
         }
-        .divider {
-            border-top: 1px solid #ccc;
-            margin: 20px auto;
-            max-width: 500px;
-        }
-        .content {
-            text-align: left;
+
+        /* Masonry Grid Layout */
+        .gallery-container {
+            padding: 20px;
             margin: 0 auto;
-            max-width: 500px;
+            max-width: 1600px;
+        }
+
+        .gallery {
+            column-count: 3;
+            column-gap: 20px;
+        }
+
+        .gallery-item {
+            break-inside: avoid;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-in forwards;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            /* Optional: subtle hover effect */
+            transition: opacity 0.3s ease;
+        }
+
+        .gallery-item img:hover {
+            opacity: 0.9;
+        }
+
+        /* Responsive Columns */
+        @media (max-width: 1000px) {
+            .gallery {
+                column-count: 2;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .gallery {
+                column-count: 1;
+            }
+            .gallery-container {
+                padding: 10px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .loading-text {
+            padding: 20px;
+            color: #999;
+            font-size: 12px;
         }
     </style>
     <!-- Google Analytics tag (GA4) -->
@@ -49,10 +122,90 @@
         <a href="index.html">home</a>
         <a href="blog.html">blog</a>
         <a href="stats.html">stats</a>
+        <a href="design.html">design</a>
     </header>
-    <div class="content">
-        <p>WIP</p>
-        <!-- Content will be added later -->
+
+    <div class="intro-text">
+        <p>
+            A collection of my design work, including posters, web and mobile apps i worked on. 
+            I usually more about UX and product, but sometimes just love to design things.
+        </p>
     </div>
+
+    <div class="gallery-container">
+        <div id="gallery" class="gallery">
+            <!-- Images will be inserted here by JS -->
+        </div>
+        <div id="loading" class="loading-text">Loading designs...</div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const gallery = document.getElementById('gallery');
+            const loading = document.getElementById('loading');
+            
+            // Configuration
+            const folderPath = 'images/design/';
+            const fileExtension = '.jpg'; // We'll assume jpg for simplicity, or we can try multiple
+            const maxImages = 100; // Safety limit
+            
+            let imageCount = 0;
+            let failures = 0;
+            
+            // We will try to load images sequentially: 1.jpg, 2.jpg, etc.
+            // untill we hit a sequence of missing files.
+            
+            const loadImage = (index) => {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    const filename = `${index}${fileExtension}`;
+                    img.src = folderPath + filename;
+                    
+                    img.onload = () => {
+                        const item = document.createElement('div');
+                        item.className = 'gallery-item';
+                        // Add animation delay for staggered effect
+                        item.style.animationDelay = `${(index % 10) * 0.1}s`;
+                        item.appendChild(img);
+                        gallery.appendChild(item);
+                        resolve(true);
+                    };
+                    
+                    img.onerror = () => {
+                        resolve(false);
+                    };
+                });
+            };
+
+            // Load logic
+            // Since we can't list files, we'll try to load 1..N
+            // We'll stop if we encounter 3 missing files in a row to be safe
+            // (in case you delete #3 but have #4)
+            
+            let consecutiveErrors = 0;
+            const maxConsecutiveErrors = 3;
+
+            loading.style.display = 'none'; // Hide text, show images as they load
+
+            for (let i = 1; i <= maxImages; i++) {
+                const success = await loadImage(i);
+                if (success) {
+                    consecutiveErrors = 0;
+                    imageCount++;
+                } else {
+                    consecutiveErrors++;
+                }
+
+                if (consecutiveErrors >= maxConsecutiveErrors) {
+                    break;
+                }
+            }
+
+            if (imageCount === 0) {
+                loading.style.display = 'block';
+                loading.innerHTML = 'No designs found. Add images to <b>images/design/</b> named <b>1.jpg</b>, <b>2.jpg</b>...';
+            }
+        });
+    </script>
 </body>
 </html>
