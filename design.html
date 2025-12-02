@@ -165,11 +165,10 @@
                         const item = document.createElement('div');
                         item.className = 'gallery-item';
                         
-                        // Enable lazy loading for performance
-                        img.loading = 'lazy';
+                        // Remove animation delay to make it appear instantly when loaded in sequence
+                        // This prevents "jumping" visual effects
+                        item.style.animation = 'fadeIn 0.3s ease-in forwards';
                         
-                        // Add animation delay for staggered effect
-                        item.style.animationDelay = `${(index % 10) * 0.1}s`;
                         item.appendChild(img);
                         gallery.appendChild(item);
                         resolve(true);
